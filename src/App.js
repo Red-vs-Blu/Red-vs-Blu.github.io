@@ -54,12 +54,8 @@ class App extends Component {
         this.prevRound = this.prevRound.bind(this);
         this.nextRound = this.nextRound.bind(this);
 
-
         this.updateRewardsForRound = this.updateRewardsForRound.bind(this);
         this.updateCreditBalance = this.updateCreditBalance.bind(this);
-
-
-
 
         this.web3     = null;
         this.contract = null;
@@ -161,7 +157,7 @@ class App extends Component {
     }
 
     subscribeToEvents = async () => {
-        this.contract.VoteBoradcastEvent().on("data", event => {
+        this.contract.NewVoteCast().on("data", event => {
             this.refreshRound();
         });
 
@@ -438,9 +434,9 @@ class App extends Component {
                     }
                     {this.state.is_active &&
                         <p>* Ongoing round,
-                            <span className="color-blue"> {this.state.red_total} </span>
+                            <span className="color-red"> {this.state.red_total} </span>
                             vs
-                            <span className="color-red"> {this.state.blue_total} </span>
+                            <span className="color-blue"> {this.state.blue_total} </span>
                         </p>
                     }
                 </div>
