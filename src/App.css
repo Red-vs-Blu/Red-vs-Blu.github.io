@@ -1,0 +1,237 @@
+/******************************************************************************/
+/* App CSS */
+
+@font-face {
+  font-family: RVBFont;
+  src:
+    local("RVB Font"),
+    local("RVB-Font"),
+    url("fonts/regular.ttf");
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+
+  color: black;
+  background: white;
+  font-family: RVBFont;
+}
+
+#root {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.App {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+
+  padding: 0px 5% 0px 5%;
+}
+
+h4 {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.App-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.App-header {
+  width: 100%;
+  height: 10%;
+  min-height: 60px;
+  display: flex;
+  flex-direction: row;
+  /* margin-bottom: 5px; */
+
+  font-size: 24pt;
+  justify-content: center;
+  align-items: center;
+}
+.App-header-red, .App-header-blue {
+  height: 100%;
+  transition: width 200ms;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.App-header-red {
+  border-bottom: 8px solid blue;
+  color: blue;
+  background: red;
+}
+.App-header-blue {
+  border-bottom: 8px solid red;
+  color: red;
+  background: blue;
+}
+.App-header-red:hover, .App-header-blue:hover {
+  cursor: pointer;
+  color: black;
+}
+
+.App-split {
+  width: 100%;
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  flex-wrap: none;
+}
+
+.App-red {
+  height: 100%;
+  background: red;
+  transition: width 200ms;
+  text-align: center;
+}
+
+.App-blue {
+  height: 100%;
+  background: blue;
+  transition: width 200ms;
+  text-align: center;
+}
+
+.App-body {
+  width: 80%;
+  height: 30%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+
+  max-width: 720px;
+  max-height: 480px;
+  margin: auto auto;
+  padding: 15px 15px;
+  border: 5px solid black;
+  border-radius: 5%;
+  background: white;
+
+  z-index: 1;
+}
+
+.App-input {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+}
+.App-input div {
+  min-width: 32px;
+  width: 15%;
+  height: 32px;
+  padding: 8px;
+  margin: 8px;
+  border-radius: 8px;
+  border: 2px solid black;
+  cursor: pointer;
+  font-size: 12pt;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.App-input .App-blue {
+  color: white;
+}
+.App-input .App-red:hover,
+.App-input .App-blue:hover {
+  background-color: white;
+  color: black;
+}
+
+.App-input input {
+  min-width: 80px;
+  width: 60%;
+  height: 32px;
+  font-size: 15pt;
+  text-align: center;
+  padding: 8px;
+  margin: 8px;
+  border: 1px solid #333;
+  border-radius: 8px;
+}
+
+.App-toolbar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.App-toolbar a {
+  margin: 3px;
+}
+
+.App-red span, .App-blue span {
+  width: 100%;
+  height: 95%;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-items: center;
+  align-content: flex-end;
+  flex: 1;
+  font-size: 32pt;
+}
+.App-blue span {
+  color: white;
+}
+
+.App-latest-btn {
+  cursor: pointer;
+  color: blue;
+}
+
+/******************************************************************************/
+
+.link-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  display: inline;
+  margin: 5px;
+  padding: 0;
+  font-size: 14pt;
+  text-decoration: underline;
+  color: blue;
+}
+
+.link-button:hover,
+.link-button:focus {
+  text-decoration: none;
+}
+
+.color-green,
+.profit {
+  color: green;
+}
+
+.color-red,
+.loss {
+  color: red;
+}
+
+.color-blue {
+  color: blue;
+}
+
+/******************************************************************************/
