@@ -1,16 +1,11 @@
-# Red-Vs-Blue frontend!
+# Red-Vs-Blue frontend
 
-Game frontend.
+A game of [tug-of-war with money](https://redvsblue.money).
 
-## Install
+## Rules
 
-```
-make deps
-```
-Note: Running `make deps` from the root dir will also fetch the site deps.
+The [Red-vs-Blu/RedVsBlue](https://github.com/Red-vs-Blu/RedVsBlue) project lists the rules of the game.
 
-## Serve
+## Feeling generous
 
-```
-make serve
-```
+Send things than can be swapped for coffee to the contract's deployer address (`0x6Cb10D1BDe7aAEf8ff7FAFF1DA258373e7964D02`).

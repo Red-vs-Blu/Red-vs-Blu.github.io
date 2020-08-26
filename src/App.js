@@ -54,21 +54,20 @@ class App extends Component {
         this.prevRound = this.prevRound.bind(this);
         this.nextRound = this.nextRound.bind(this);
 
-
         this.updateRewardsForRound = this.updateRewardsForRound.bind(this);
         this.updateCreditBalance = this.updateCreditBalance.bind(this);
 
-
-
-
         this.web3     = null;
         this.contract = null;
+
+        this.account0 = null;
+        this.oneAccountInitTime = false;
 
         this.state = {
             /*
              *  Constants.
              */
-            BLOCK_DIV: 128,
+            BLOCK_DIV: 4096,
 
             /*
              *  Active is set enabled if the current game being viewed is the
@@ -84,6 +83,7 @@ class App extends Component {
             ongoing_round_id: -1,
             red_total: Number(-1),
             blue_total: Number(-1),
+            round_rewards_loading: true,
             round_rewards: Number(0),
             round_bets: Number(0),
             round_claimable: false,
@@ -155,13 +155,13 @@ class App extends Component {
         RVB.deployed().then(async (instance) => {
             this.contract = instance;
             this.subscribeToEvents();
-            await this.refreshRound();
             await this.updateCreditBalance();
+            await this.refreshRound();
         });
     }
 
     subscribeToEvents = async () => {
-        this.contract.VoteBoradcastEvent().on("data", event => {
+        this.contract.NewVoteCast().on("data", event => {
             this.refreshRound();
         });
 
@@ -172,12 +172,17 @@ class App extends Component {
     ////////////////////////////////////////////////////////////////////////////
 
     getFirstAccount = async () => {
-        const accounts = await this.resolve_promise(this.web3.eth.getAccounts);
-        if (accounts.length === 0) {
-            alert("At-least one account must exist!");
-            return;
+        if (!this.account0 && !this.oneAccountInitTime) {
+            this.oneAccountInitTime = true;
+            const accounts = await this.resolve_promise(this.web3.eth.getAccounts);
+            if (accounts.length === 0) {
+                alert("Web3 account not found. Connect this site to your web3 wallet and refresh this page.");
+                return;
+            }
+            this.account0 = accounts[0];
         }
-        return accounts[0];
+
+        return this.account0;
     }
 
     getBlocksLeftInRound = async () => {
@@ -203,17 +208,22 @@ class App extends Component {
     }
 
     updateRoundTotals = async () => {
+        // Only valid if the current round is active and valid.
+        if (this.state.round_id < 0) return;
+
         const app_account = await this.getFirstAccount();
         this.contract.GetGameTotals(this.state.round_id, {
             from: app_account,
         }).then((result, err) => {
             this.setState({
+                round_rewards_loading: true,
                 red_total: Number(this.web3.fromWei(result[0], 'milli')),
                 blue_total: Number(this.web3.fromWei(result[1], 'milli')),
-            }, this.updatePercentages);
+            }, () => {
+                this.updatePercentages();
+                this.updateRewardsForRound();
+            });
         });
-
-        this.updateRewardsForRound();
     }
 
     refreshRound = async () => {
@@ -249,6 +259,7 @@ class App extends Component {
     prevRound = async () => {
         if (this.state.round_id > 0) {
             this.setState({
+                round_rewards_loading: true,
                 round_id: this.state.round_id - 1,
                 is_active: false,
             }, this.refreshRound);
@@ -259,6 +270,7 @@ class App extends Component {
         if (this.state.round_id < this.state.ongoing_round_id) {
             const is_active = (this.state.ongoing_round_id === this.state.round_id + 1);
             this.setState({
+                round_rewards_loading: true,
                 round_id: this.state.round_id + 1,
                 is_active: is_active,
             }, this.refreshRound);
@@ -268,6 +280,7 @@ class App extends Component {
     latestRound = async () => {
         const latest_round = await this.getRoundFromETH();
         this.setState({
+            round_rewards_loading: true,
             round_id: latest_round,
             ongoing_round_id: latest_round,
             is_active: true,
@@ -317,10 +330,13 @@ class App extends Component {
             const bet_amount = this.web3.fromWei(result[1], 'milli');
             const claimed = result[2];
             this.setState({
+                round_rewards_loading: false,
                 round_rewards: winnings,
                 round_bets: bet_amount,
                 round_claimable: !claimed,
             });
+        }).catch((err) => {
+            console.log("updateRewardsForRound ERR ", err);
         });
     }
 
@@ -415,7 +431,7 @@ class App extends Component {
             <div className="App-body">
                 <div>
                     <h4>
-                        <div>A game of tug-of-war for degens.</div>
+                        <div>A game of tug-of-war.</div>
                         <div>
                             <span>Round: </span>
                             {this.state.round_id > 0 && <button className="link-button" onClick={this.prevRound}>&lt;</button>}
@@ -425,22 +441,27 @@ class App extends Component {
                         </div>
                     </h4>
                     <p>* No token b/s, 1 ETH == 1000 credits</p>
-                    <p>* New round every {this.state.BLOCK_DIV} blocks [{this.state.BLOCK_DIV - this.state.current_block} blocks left]</p>
                     <p>* Losing color pays winning color</p>
-                    <p>* No fees, contract <a href="https://github.com/Red-vs-Blu/RedVsBlue/blob/master/contracts/RedVsBlue.sol">here</a></p>
-                    {!this.state.is_active &&
-                        <p>* Result: {this.state.round_rewards}
-                            {this.state.round_rewards >= this.state.round_bets && <span className="profit"> (+{this.state.round_rewards - this.state.round_bets})</span>}
-                            {this.state.round_rewards < this.state.round_bets && <span className="loss"> ({this.state.round_rewards - this.state.round_bets})</span>}
-                            {this.state.round_claimable && this.state.round_rewards > 0 && <button type="button" className="link-button" onClick={this.claimRewards}>claim</button>}
-                            {!this.state.round_claimable && this.state.round_rewards > 0 && <span> [claimed] </span>}
+                    <p>* New round every {this.state.BLOCK_DIV} blocks [{this.state.BLOCK_DIV - this.state.current_block} blocks left]</p>
+                    <p>* No fees, <a target="_blank" rel="noopener noreferrer" href="https://github.com/Red-vs-Blu/RedVsBlue/blob/master/contracts/RedVsBlue.sol">contract here</a></p>
+                    <p>* Project page and <a target="_blank" rel="noopener noreferrer" href="https://github.com/Red-vs-Blu/RedVsBlue#how-to-play">extended rules</a></p>
+                    {!this.state.is_active && this.state.round_rewards_loading && (
+                        <p>* Result: {this.state.round_rewards_loading && <span>Computing ...</span>}</p>
+                    )}
+                    {!this.state.is_active && !this.state.round_rewards_loading && (
+                        <p>* Result:
+                                {this.state.round_rewards}
+                                {this.state.round_rewards >= this.state.round_bets && <span className="profit"> (+{this.state.round_rewards - this.state.round_bets})</span>}
+                                {this.state.round_rewards < this.state.round_bets && <span className="loss"> ({this.state.round_rewards - this.state.round_bets})</span>}
+                                {this.state.round_claimable && this.state.round_rewards > 0 && <button type="button" className="link-button" onClick={this.claimRewards}>claim</button>}
+                                {!this.state.round_claimable && this.state.round_rewards > 0 && <span> [claimed] </span>}
                         </p>
-                    }
+                    )}
                     {this.state.is_active &&
                         <p>* Ongoing round,
-                            <span className="color-blue"> {this.state.red_total} </span>
+                            <span className="color-red"> {this.state.red_total} </span>
                             vs
-                            <span className="color-red"> {this.state.blue_total} </span>
+                            <span className="color-blue"> {this.state.blue_total} </span>
                         </p>
                     }
                 </div>
