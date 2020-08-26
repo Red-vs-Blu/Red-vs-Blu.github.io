@@ -151,8 +151,8 @@ class App extends Component {
         RVB.deployed().then(async (instance) => {
             this.contract = instance;
             this.subscribeToEvents();
-            await this.refreshRound();
             await this.updateCreditBalance();
+            await this.refreshRound();
         });
     }
 
@@ -199,6 +199,9 @@ class App extends Component {
     }
 
     updateRoundTotals = async () => {
+        // Only valid if the current round is active and valid.
+        if (!this.state.is_active || this.state.round_id < 0) return;
+
         const app_account = await this.getFirstAccount();
         this.contract.GetGameTotals(this.state.round_id, {
             from: app_account,
@@ -317,6 +320,8 @@ class App extends Component {
                 round_bets: bet_amount,
                 round_claimable: !claimed,
             });
+        }).catch((err) => {
+            console.log("updateRewardsForRound ERR ", err);
         });
     }
 
