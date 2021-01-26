@@ -174,7 +174,7 @@ class App extends Component {
     getFirstAccount = async () => {
         if (!this.account0 && !this.oneAccountInitTime) {
             this.oneAccountInitTime = true;
-            const accounts = await this.resolve_promise(this.web3.eth.getAccounts);
+            const accounts = await ethereum.request({ method: "eth_accounts" });
             if (accounts.length === 0) {
                 alert("Web3 account not found. Connect this site to your web3 wallet and refresh this page.");
                 return;
@@ -186,13 +186,13 @@ class App extends Component {
     }
 
     getBlocksLeftInRound = async () => {
-        const bn = await this.resolve_promise(this.web3.eth.getBlockNumber);
-        return parseInt(bn % this.state.BLOCK_DIV);
+        const bn = await window.ethereum.request({method: "eth_blockNumber", params: []})
+        return parseInt(parseInt(bn) % this.state.BLOCK_DIV);
     }
 
     getRoundFromETH = async () => {
-        const bn = await this.resolve_promise(this.web3.eth.getBlockNumber);
-        return parseInt(bn / this.state.BLOCK_DIV);
+        const bn = await window.ethereum.request({method: "eth_blockNumber", params: []})
+        return parseInt(parseInt(bn) / this.state.BLOCK_DIV);
     }
 
     ////////////////////////////////////////////////////////////////////////////
